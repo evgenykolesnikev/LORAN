@@ -1,0 +1,44 @@
+
+#plot {
+  width: 800px; 
+  height: 600px; 
+  margin: 50px auto 0 auto;
+}
+
+#LORANConfigForm {
+  margin: 20px auto 0 auto;
+  padding: 20px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  width: 800px;
+}
+
+#LORANConfigForm button {
+  padding: 10px;
+  margin-left: auto;
+}
+
+.inputsBox {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-evenly;
+}
+
+.inputContainer {
+  width: 250px;
+}
+
+.inputContainer > * {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.inputContainer input {
+  width: 90%;
+  padding: 5px;
+}
+
+.inputContainer label{
+  width: 90%;
+}

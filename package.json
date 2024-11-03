@@ -1,0 +1,17 @@
+{
+  "name": "radar",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx concurrently \"node proxy.js\" \"python python_server/main.py\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "concurrently": "^9.0.1",
+    "express": "^4.21.0",
+    "http-proxy-middleware": "^3.0.2"
+  }
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en/ua">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>LORAN</title>
+
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+
+  <div id="plot" class="box"></div>
+
+  <form id="LORANConfigForm" class="box">
+    <div class="inputsBox">
+
+      <div class="inputContainer" data-config="LORANService">
+        <label for="emulationZoneSizeWidth">Ширина зони емуляції (кілометри):</label>
+        <input type="number" id="emulationZoneSizeWidth" name="emulationZoneSize.width" />
+      </div>
+
+      <div class="inputContainer" data-config="LORANService">
+        <label for="emulationZoneSizeHeight">Висота зони емуляції (кілометри):</label>
+        <input type="number" id="emulationZoneSizeHeight" name="emulationZoneSize.height" />
+      </div>
+
+      <div class="inputContainer" data-config="LORANService">
+        <label for="objectSpeed">Швидкість об'єкта (км/год):</label>
+        <input type="number" id="objectSpeed" name="objectSpeed" />
+      </div>
+
+      
+    
+
+    </div>
+
+    <button type="submit">Надіслати</button>
+  </form>
+
+  <div class="inputContainer">
+    <label for="dataOutput">Дані про станції та ціль:</label>
+    <textarea id="dataOutput" rows="4" cols="50" readonly></textarea>
+    <button id="saveDataButton">Зберегти дані</button>
+</div>
+
+  <script type="module">
+    import { LORANService } from "/src/LORANService.js";
+    import { LORANGraph } from "/src/LORANGraph.js";
+    import { Config } from "/src/Config.js";
+    import { LORANStorage } from "/src/LORANStorage.js";
+    import { LORANCalculator } from "/src/LORANCalculator.js";
+
+    let LORANServiceProps = {
+      configUrl: "http://localhost:3000/loran_service/config",
+      socketUrl: "ws://localhost:4002",
+      eventName: "LORANDataReceived",
+    };
+
+    const loranService = new LORANService(LORANServiceProps);
+    const loranGraph = new LORANGraph("plot");
+    const loranStorage = new LORANStorage(new LORANCalculator("http://localhost:3000/loran_calculator/loran"));
+
+    async function main() {
+      await loranService.fetchConfiguration();
+      loranService.connectWebSocket();
+
+      const formElement = document.getElementById("LORANConfigForm");
+
+      const loranConfig = new Config(formElement, function (config) {
+        loranGraph.updateConfiguration(config);
+        loranService.updateConfiguration(config.LORANService).then(
+          () => {
+            loranStorage.updateConfiguration(config.LORANService);
+          }
+        );
+       
+      });
+
+      let config = {};
+      config["LORANService"] = loranService.config;
+
+      loranConfig.setConfig(config);
+
+      window.addEventListener("LORANDataReceived", (event) => {
+        const loranData = event.detail;
+        loranStorage.addStationInfo(loranData);
+      });
+
+      loranGraph.updateConfiguration(config);
+      loranStorage.updateConfiguration(config.LORANService);
+      loranGraph.init(loranStorage);
+    }
+
+    $(document).ready(function () {
+      main();
+
+      
+      $("#saveDataButton").click(function () {
+    const outputData = loranGraph.getDataForOutput();
+    $("#dataOutput").val(outputData); 
+  });
+    });
+  </script>
+
+</body>
+
+</html>
